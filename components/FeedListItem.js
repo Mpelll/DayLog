@@ -1,5 +1,20 @@
 import React from 'react';
 import {Platform, Pressable, StyleSheet, Text} from 'react-native';
+import {format, formatDistanceToNow} from 'date-fns';
+import {ko} from 'date-fns/locale';
+
+function formatDate(date) {
+  const d = new Date(date);
+  const now = Date.now();
+  const diff = (now - d.getTime()) / 1000;
+  if (diff < 60 * 1) {
+    return '방금 전';
+  }
+  if (diff < 60 * 60 * 24 * 3) {
+    return formatDistanceToNow(d, {addSuffix: true, locale: ko});
+  }
+  return format(d, 'PPP EEE p', {locale: ko});
+}
 
 function truncate(text) {
   const replaced = text.replace(/\n/g, '  ');
@@ -10,14 +25,23 @@ function truncate(text) {
 }
 
 function FeedListItem({log}) {
-  const [title, body, date] = log;
+  const {title, body, date} = log;
 
   return (
-    <Pressable style={({pressed}) => [styles.block]}
-  )
+    <Pressable
+      style={({pressed}) => [
+        styles.block,
+        Platform.OS === 'ios' && pressed && {backgroundColor: '#efefef'},
+      ]}
+      android_ripple={{color: '#ededed'}}>
+      <Text style={styles.date}>{formatDate(date)}</Text>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.body}>{truncate(body)}</Text>
+    </Pressable>
+  );
 }
 
-const styles= StyleSheet.create({
+const styles = StyleSheet.create({
   block: {
     backgroundColor: 'white',
     paddingHorizontal: 16,
@@ -32,13 +56,13 @@ const styles= StyleSheet.create({
     color: '#263238',
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8
+    marginBottom: 8,
   },
   body: {
-    color: "#37474f",
+    color: '#37474f',
     fontSize: 16,
     lineHeight: 21,
-  }
-})
+  },
+});
 
-export default FeedListItem
+export default FeedListItem;
