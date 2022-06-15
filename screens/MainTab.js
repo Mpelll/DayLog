@@ -1,5 +1,6 @@
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import SearchHeader from '../components/SearchHeader';
 import FeedsScreen from './FeedsScreens';
 import SearchScreen from './SearchScreen';
 import CalenderScreen from './CalendarScreen';
@@ -36,6 +37,7 @@ function MainTab() {
           tabBarIcon: ({color, size}) => (
             <Icon name="search" size={size} color={color} />
           ),
+          headerTitle: () => <SearchHeader />,
         }}
       />
     </Tab.Navigator>

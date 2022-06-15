@@ -1,62 +1,34 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
-import {StyleSheet, View, Text, Animated, Button} from 'react-native';
+import React, {useContext, useState, useMemo} from 'react';
+import CalendarView from '../components/CalendarView';
+import {format} from 'date-fns';
 import LogContext from '../contexts/LogContext';
-
-function SlideLeftAndRight() {
-  const animation = useRef(new Animated.Value(0)).current;
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    Animated.timing(animation, {
-      toValue: enabled ? 1 : 0,
-      useNativeDriver: true,
-    }).start();
-  }, [enabled, animation]);
-
-  return (
-    <View>
-      <Animated.View
-        style={[
-          styles.rectangle,
-          {
-            transform: [
-              {
-                translateX: animation.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, 150],
-                }),
-              },
-            ],
-            opacity: animation.interpolate({
-              inputRange: [0, 1],
-              outputRange: [1, 0],
-            }),
-          },
-        ]}
-      />
-      <Button
-        title="Toggle"
-        onPress={() => {
-          setEnabled(!enabled);
-        }}
-      />
-    </View>
-  );
-}
+import FeedList from '../components/FeedList';
 
 function CalenderScreen() {
-  const {text} = useContext(LogContext);
+  const {logs} = useContext(LogContext);
+  const [selectedDate, setSelectedDate] = useState(
+    format(new Date(), 'yyyy-mm-dd'),
+  );
+
+  const filteredLogs = logs.filter(
+    log => format(new Date(log.date), 'yyyy-mm-dd') === selectedDate,
+  );
+
+  const markedDates = useMemo(
+    () =>
+      logs.reduce((acc, current) => {
+        const formattedDate = format(new Date(current.date), 'yyyy-mm-dd');
+        acc[formattedDate] = {marked: true};
+        return acc;
+      }, {}),
+    [logs],
+  );
   return (
-    <View style={styles.block}>
-      <SlideLeftAndRight />
-    </View>
+    <FeedList
+      logs={filteredLogs}
+      ListHeaderComponent={<CalendarView markedDates={markedDates} />}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  block: {},
-  text: {padding: 16, fontSize: 24},
-  rectangle: {width: 100, height: 100, backgroundColor: 'black'},
-});
 
 export default CalenderScreen;
